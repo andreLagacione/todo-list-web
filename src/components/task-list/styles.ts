@@ -7,6 +7,11 @@ export const Container = styled.div`
 
     h2 {
         font-size: 1.125em;
+        cursor: pointer;
+
+        .icon {
+            margin-left: 5px;
+        }
     }
 
     label {
