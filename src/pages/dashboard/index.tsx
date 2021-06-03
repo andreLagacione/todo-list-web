@@ -1,6 +1,7 @@
 import React from 'react';
 import Header from '../../components/header';
 import TaskInput from '../../components/task-input';
+import Tasklist from '../../components/task-list';
 import { Container, Content } from './styles';
 
 const Dashboard: React.FC = () => {
@@ -11,6 +12,7 @@ const Dashboard: React.FC = () => {
 
             <Content>
                 <TaskInput />
+                <Tasklist />
             </Content>
         </Container>
     )
