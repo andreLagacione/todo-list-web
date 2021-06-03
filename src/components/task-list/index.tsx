@@ -2,6 +2,7 @@ import React from 'react';
 import TaskItem from '../task-item';
 import { Container } from './styles';
 import { FaSortAlphaDown, FaSortAlphaDownAlt } from 'react-icons/fa';
+import Loader from '../loader';
 
 const Tasklist: React.FC = () => {
 
@@ -13,6 +14,8 @@ const Tasklist: React.FC = () => {
                 <FaSortAlphaDown size={14} className="icon" />
                 <FaSortAlphaDownAlt size={14} className="icon" />
             </h2>
+
+            <Loader />
 
             <TaskItem />
             <TaskItem />
