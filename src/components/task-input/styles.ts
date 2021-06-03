@@ -2,8 +2,11 @@ import styled from 'styled-components';
 import { shade } from 'polished';
 
 export const Container = styled.div`
-    display: flex;
-    align-items: center;
+    form {
+        display: flex;
+        align-items: center;
+
+    }
 
     input {
         width: 100%;
@@ -26,6 +29,15 @@ export const Container = styled.div`
 
         &:hover {
             background-color: ${shade(0.2, '#9a3333')};
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+
+            &:hover {
+                background-color: #9a3333;
+            }
         }
     }
 `;

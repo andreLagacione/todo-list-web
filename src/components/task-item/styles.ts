@@ -1,13 +1,21 @@
 import { shade } from 'polished';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
-export const Container = styled.div`
+interface ContainerProps {
+    lastTask: boolean;
+}
+
+export const Container = styled.div<ContainerProps>`
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 10px;
     border: 1px solid #9a3333;
     border-bottom: 0;
+
+    ${(props) => props.lastTask && css`
+        border-bottom: 1px solid #9a3333;
+    `}
 
     > div {
         display: flex;
