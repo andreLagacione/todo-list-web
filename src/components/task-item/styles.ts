@@ -3,6 +3,7 @@ import styled, { css } from 'styled-components';
 
 interface ContainerProps {
     lastTask: boolean;
+    isCompleted: boolean;
 }
 
 export const Container = styled.div<ContainerProps>`
@@ -23,11 +24,15 @@ export const Container = styled.div<ContainerProps>`
     }
 
     label {
-        margin-top: 0;
+        margin-top: 0 !important;
         display: flex;
         align-items: center;
         font-size: 0.875em;
         cursor: pointer;
+
+        ${(props) => props.isCompleted && css`
+            text-decoration: line-through;
+        `}
 
         input {
             margin-right: 15px;
