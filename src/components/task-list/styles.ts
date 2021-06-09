@@ -33,7 +33,7 @@ export const Container = styled.div`
 `;
 
 export const Filter = styled.div`
-    margin-top: 25px;
+    margin: 25px 0;
     display: flex;
 
     > div {

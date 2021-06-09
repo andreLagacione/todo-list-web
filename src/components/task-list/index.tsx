@@ -11,7 +11,7 @@ import {
     FaListUl,
 } from 'react-icons/fa';
 import Loader from '../loader';
-import { useTask } from '../../hooks/task';
+import { Task, useTask } from '../../hooks/task';
 
 enum OrderByFilter {
     description_desc = 'DESCRIPTION_DESC',
@@ -27,34 +27,56 @@ enum FilterByFilter {
 }
 
 const Tasklist: React.FC = () => {
-    const { tasks, controlLoaderTaskList, FilterTask } = useTask();
+    const { updateTaskList, getTasks, controlUpdateTaskList } = useTask();
+    const [tasks, setTasks] = useState<Task[]>([]);
+    const [backupTasks, setBackupTasks] = useState<Task[]>([]);
+    const [loader, setLoader] = useState<boolean>(false);
     const [orderByFilter, setOrderByFilter] = useState<OrderByFilter>(OrderByFilter.description_asc);
     const [filterByFilter, setFilterByFilter] = useState<FilterByFilter>(FilterByFilter.all);
+    const [hideCompleteds, setHideCompleteds] = useState<boolean>(false);
 
     const handleOrderBy = (event: any) => {
         setOrderByFilter(event.target.value);
-        filterTasks(filterByFilter, event.target.value);
+        _getTasks(true, filterByFilter, event.target.value);
     }
 
     const handleFilterBy = (event: any) => {
         setFilterByFilter(event.target.value);
-        filterTasks(event.target.value, orderByFilter);
-    }
-
-    const filterTasks = (filterBy: FilterByFilter, orderBy: OrderByFilter) => {
-        FilterTask(filterBy, orderBy);
+        _getTasks(true, event.target.value, orderByFilter);
     }
 
     useEffect(() => {
-        
-    }, [tasks, controlLoaderTaskList]);
+        if (updateTaskList.needUpdate) {
+            _getTasks(updateTaskList.needLoader, filterByFilter, orderByFilter);
+        }
+    }, [updateTaskList]);
+
+    const _getTasks = async (needLoader: boolean, _filterByFilter: string, _orderByFilter: string) => {
+        setLoader(needLoader);
+        setTasks(await getTasks(_filterByFilter, _orderByFilter));
+        setLoader(false);
+        controlUpdateTaskList(false);
+    }
+
+    const handleHideCompleted = () => {
+        setHideCompleteds(!hideCompleteds);
+
+        if (!hideCompleteds) {
+            setBackupTasks(tasks);
+            console.log(tasks);
+            const filteredTasks = tasks.filter(task => task.state !== 'COMPLETE');
+            setTasks(filteredTasks);
+        } else {
+            _getTasks(false, filterByFilter, orderByFilter);
+        }
+    }
 
     return (
         <Container>
             <h2>Tasks</h2>
 
             {
-                controlLoaderTaskList ? <Loader />
+                loader ? <Loader />
                 :
                     <>
                         <Filter>
@@ -165,7 +187,7 @@ const Tasklist: React.FC = () => {
                         {
                             tasks.length ?
                             tasks.map((task, index) => (
-                                <TaskItem task={task} lastTask={tasks.length === index + 1} />
+                                <TaskItem key={task.id} task={task} lastTask={tasks.length === index + 1} />
                             ))
                             :
                             <div className="alert">No tasks found!</div>
@@ -175,7 +197,13 @@ const Tasklist: React.FC = () => {
                             tasks.length ?
                             <label htmlFor="hideCompleted">
                                 Hide completed
-                                <input type="checkbox" name="hideCompleted" id="hideCompleted" value="true" />
+                                <input
+                                    type="checkbox"
+                                    name="hideCompleted"
+                                    id="hideCompleted"
+                                    checked={hideCompleteds}
+                                    onChange={handleHideCompleted}
+                                />
                             </label>
                             :
                             ''

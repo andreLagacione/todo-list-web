@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Container } from './styles';
 import { FiEdit, FiTrash } from 'react-icons/fi';
 import { Task, TaskState, useTask } from '../../hooks/task';
@@ -32,9 +32,13 @@ const TaskItem: React.FC<TaskItem> = ({ task, lastTask }) => {
             </div>
 
             <div>
-                <button type="button" className="edit" onClick={() => editTask(task)}>
-                    <FiEdit size={14} color="fff" />
-                </button>
+                {
+                    task.state === TaskState.complete ? ''
+                    :
+                    <button type="button" className="edit" onClick={() => editTask(task)}>
+                        <FiEdit size={14} color="fff" />
+                    </button>
+                }
 
                 <button
                     type="button"

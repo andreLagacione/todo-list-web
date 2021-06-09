@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useState } from 'react';
 import { ConfirmModalControl } from '../components/confirm-modal';
 import { ToastContainer, toast } from 'react-toastify';
+import api from '../services/api';
 
 export enum TaskState {
     complete = 'COMPLETE',
@@ -15,44 +16,48 @@ export interface Task {
     completedAt: Date | null;
 }
 
+export interface UpdateTask {
+    needUpdate: boolean;
+    needLoader: boolean;
+}
+
 interface TaskContextData {
-    tasks: Task[];
     editTaskTitle: Task;
     confirmModalControl: ConfirmModalControl;
     controlLoaderDeleteTask: boolean;
-    controlLoaderTaskList: boolean;
+    updateTaskList: UpdateTask;
+    getTasks(_filterBy: string, _orderBy: string): Promise<Task[]>;
     createTask(taskName: string): Promise<void>;
     updateTask(task: Task): Promise<void>;
     editTask(task: Task): Promise<void>;
     controlConfirmModal(data: ConfirmModalControl): Promise<void>;
     deleteTask(taskId: string): Promise<void>;
-    FilterTask(filterBy: string, orderBy: string): Promise<void>;
+    controlUpdateTaskList(state: boolean): void;
 }
 
 const TaskContext = createContext<TaskContextData>({} as TaskContextData);
 
 export const TaskProvider: React.FC = ({ children }) => {
-    const [tasks, setTasks] = useState<Task[]>([]);
     const [editTaskTitle, setEditTaskTitle] = useState<Task>({} as Task);
     const [confirmModalControl, setConfirmModalControl] = useState<ConfirmModalControl>({} as ConfirmModalControl);
     const [controlLoaderDeleteTask, setControlLoaderDeleteTask] = useState<boolean>(false);
-    const [controlLoaderTaskList, setControlLoaderTaskList] = useState<boolean>(false);
+    const [updateTaskList, setUpdateTaskList] = useState<UpdateTask>({ needUpdate: true, needLoader: true });
 
-    const createTask = useCallback(async (taskName: string) => {
-        const newTask = {
-            id: '' + (Math.random() * 10000),
-            description: taskName,
-            state: TaskState.incomplete,
-            createdAt: new Date(),
-            completedAt: null,
-        };
+    const getTasks = useCallback(async (_filterBy: string, _orderBy: string) => {
+        const _tasks = await api.get<Task[]>(`tasks?filterBy=${_filterBy}&orderBy=${_orderBy}`);
+        return _tasks.data;
+    }, []);
 
-        await setTasks([...tasks, newTask]);
-
+    const createTask = useCallback(async (description: string) => {
+        await api.post<Task>('tasks', { description });
+        toast.success('Task created');
+        setUpdateTaskList({ needUpdate: true, needLoader: false });
     }, []);
 
     const updateTask = useCallback(async (task: Task) => {
-        
+        const response = await api.patch<{message: string}>(`tasks/${task.id}`, task);
+        toast.success(response.data.message);
+        setUpdateTaskList({ needUpdate: true, needLoader: false });
     }, []);
 
     const editTask = useCallback(async (task: Task) => {
@@ -65,36 +70,31 @@ export const TaskProvider: React.FC = ({ children }) => {
 
     const deleteTask = useCallback(async (taskId: string) => {
         setControlLoaderDeleteTask(true);
-
-        setTimeout(() => {
-            setControlLoaderDeleteTask(false);
-            setConfirmModalControl({ isOpen: false, taskId });
-            toast.success('Task deleted!');
-        }, 3000);
+        const response = await api.delete<{message: string}>(`tasks/${taskId}`);
+        toast.success(response.data.message);
+        setUpdateTaskList({ needUpdate: true, needLoader: false });
+        setControlLoaderDeleteTask(false);
+        setConfirmModalControl({ isOpen: false, taskId });
     }, []);
 
-    const FilterTask = useCallback(async (filterBy: string ,orderBy: string) => {
-        setControlLoaderTaskList(true);
-
-        setTimeout(() => {
-            setControlLoaderTaskList(false);
-        }, 3000);
+    const controlUpdateTaskList = useCallback((state: boolean) => {
+        setUpdateTaskList({ needUpdate: state, needLoader: state });
     }, []);
     
     return (
         <TaskContext.Provider
             value={{
-                tasks,
                 editTaskTitle,
                 confirmModalControl,
                 controlLoaderDeleteTask,
-                controlLoaderTaskList,
+                updateTaskList,
+                getTasks,
                 createTask,
                 updateTask,
                 editTask,
                 controlConfirmModal,
                 deleteTask,
-                FilterTask
+                controlUpdateTaskList,
             }}
         >
             {children}
